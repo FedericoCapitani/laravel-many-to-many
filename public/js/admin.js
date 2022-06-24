@@ -49920,7 +49920,7 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\MAMP\htdocs\Laravel\laravel-one-to-many\resources\js\admin.js */"./resources/js/admin.js");
+module.exports = __webpack_require__(/*! C:\MAMP\htdocs\Laravel\laravel-many-to-many\resources\js\admin.js */"./resources/js/admin.js");
 
 
 /***/ })
