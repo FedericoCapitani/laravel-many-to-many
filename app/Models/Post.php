@@ -25,7 +25,7 @@ class Post extends Model
         return $this->belongsTo(Category::class);
     }
     /**
-     * Get the tags 
+     * The tags that belong to the Post
      * 
      * @return Illuminate\Database\Eloquent\Relations\BelongsToMany;
      */

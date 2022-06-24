@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tag extends Model
 {
+    protected $fillable = ['name', 'slug'];
     /**
-     * Get the post that owns the tag
+     * The posts that belong to the Tag
      * 
      * @return Illuminate\Database\Eloquent\Relations\BelongsToMany;
      */
