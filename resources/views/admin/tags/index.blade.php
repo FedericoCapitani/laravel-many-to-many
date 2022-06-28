@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('content')
 <div class="container">
-    @include('partials.message')
+    @include('partials.session_message')
     <div class="row">
         <div class="col-4">
             <h2 class="py-3">Add New Tag</h2>

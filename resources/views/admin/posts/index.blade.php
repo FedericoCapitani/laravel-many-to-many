@@ -1,7 +1,10 @@
 @extends('layouts.admin')
 @section('content')
 <div class="container">
-    <h1 class="text-center py-5">All Posts</h1>
+    <div class="d-flex justify-content-between py-4">
+        <h1>All Posts</h1>
+        <div><a href="{{route('admin.posts.create')}}" class="btn btn-primary">Add Post</a></div>
+    </div>
     @include('partials.session_message')
     <table class="table table-striped">
         <thead>
