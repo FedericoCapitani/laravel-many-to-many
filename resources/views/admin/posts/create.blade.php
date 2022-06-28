@@ -2,7 +2,7 @@
 @section('content')
 <div class="container">
     @include('partials.errors')
-    <form class="bg-light mt-5 p-3" action="{{route('admin.posts.store')}}" method="post">
+    <form class="bg-light mt-5 p-3" action="{{route('admin.posts.store')}}" method="post" enctype="multipart/form-data">
         @csrf
 
         <div class="mb-3">
@@ -14,7 +14,7 @@
 
         <div class="mb-3">
             <label for="image" class="form-label">Image</label>
-            <input type="text" name="image" id="image" class="form-control @error('image') is-invalid @enderror" placeholder="Insert image" aria-describedby="helpimage" value="{{old('image')}}">
+            <input type="file" name="cover_image" id="cover_image" class="form-control @error('cover_image') is-invalid @enderror" placeholder="Learn phhp article" aria-describedby="cover_imageHelper">
             @include('partials.single_errors',['variable' => 'image'])
         </div>
 

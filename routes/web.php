@@ -1,7 +1,9 @@
 <?php
 
+use App\Mail\PostUpdatedAdminMessage;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Auth;
+use App\Models\Post;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,6 +33,12 @@ Route::middleware('auth')->prefix('admin')->namespace('Admin')->name('admin.')->
         'tags' => 'tag:slug'])->except(['show', 'create','edit'
     ]);
 });
+
+Route::get('mailable', function(){
+$post = Post::findOrFail(10);
+return new PostUpdatedAdminMessage($post);
+});
+
 
 // inseriamola come ultima rotta
 // alla fine del file web.php

@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Post;
+namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PostRequest;
+use App\Mail\NewPostCreated;
+use App\Mail\PostUpdatedAdminMessage;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Models\Post;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Support\Str;
 
 
@@ -20,7 +27,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::all()->sortDesc();
+        $currentuser = Auth::id();
+        $posts = Post::where('user_id', '=', $currentuser)->get()->sortDesc();
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -47,9 +55,26 @@ class PostController extends Controller
         //dd($request->all());
         $validate_data = $request->validated();
         $validate_data['slug'] = Str::slug($request->title);
-        $validate_data['user_id'] = Auth::user()->id;
+        $validate_data['user_id'] = Auth::id();
+
+        if($request->hasFile('cover_image')){
+            //validation
+            $request->validate([
+                'cover_image' => 'nullable|image|max:500'
+            ]);
+            //save
+            //take path
+            $path = Storage::put('post_images', $request->cover_image);
+
+
+            //pass the path of array
+            $val_data['cover_image'] = $path ;
+
+        };
+
         $new_post = Post::create($validate_data);
         $new_post->tags()->attach($request->tags);
+        Mail::to($request->user())->send(new NewPostCreated($new_post));
         return redirect()->route('admin.posts.index')->with('status', 'Post Create SuccessFull');
     }
 
@@ -88,9 +113,28 @@ class PostController extends Controller
     {
         $validate_data = $request->validated();
         $validate_data['slug'] = Str::slug($request->title);
+
+        if($request->hasFile('cover_image')){
+            //validation
+            $request->validate([
+                'cover_image' => 'nullable|image|max:500'
+            ]);
+            //save
+            Storage::delete($post->cover_image);
+            //take path
+            $path = Storage::put('post_images', $request->cover_image);
+
+
+            //pass the path of array
+            $val_data['cover_image'] = $path ;
+
+        };
+
         $post->update($validate_data);
         $post->tags()->sync($request->tags);
-        return redirect()->route('admin.posts.show', compact('post'))->with('status', "Post $post->title Update SuccessFull");
+        Mail::to('admin@boolpress.it')->send(new PostUpdatedAdminMessage($post));
+        return (new PostUpdatedAdminMessage($post))->render();
+        return redirect()->route('admin.posts.show');
     }
 
     /**
@@ -101,6 +145,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        Storage::delete($post->cover_image);
         $post->delete();
         return redirect()->route('admin.posts.index')->with('status', 'Post Delete SuccessFull');
     }
