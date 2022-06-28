@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Tag;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
-use App\Models\Tag;
 use Illuminate\Validation\Rule;
-use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
@@ -17,10 +17,9 @@ class TagController extends Controller
      */
     public function index()
     {
-        $tags = Tag::orderByDesc('id')->get();
-        return view('admin.tags.index' , compact('tags'));
+       $tags = Tag::all()->sortDesc();
+       return view('admin.tags.index',compact('tags'));
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -30,20 +29,14 @@ class TagController extends Controller
      */
     public function store(Request $request)
     {
-
         $val_data = $request->validate([
             'name' => 'required|unique:tags'
         ]);
-
         $slug = Str::slug($request->name);
-        $val_data['slug'] = $slug ;
-
+        $val_data['slug'] = $slug;
         Tag::create($val_data);
-
-        return redirect()->back()->with('message', "Tag $slug added successfully");
+        return redirect()->back()->with('status',"Tag $slug added succesfully");
     }
-
-
 
     /**
      * Update the specified resource in storage.
@@ -54,18 +47,13 @@ class TagController extends Controller
      */
     public function update(Request $request, Tag $tag)
     {
-
         $val_data = $request->validate([
-            'name' =>[
-                'required', Rule::unique('categories')->ignore($tag)]
+            'name' => ['required',Rule::unique('tags')->ignore($tag->id)]
         ]);
-
         $slug = Str::slug($request->name);
-        $val_data['slug'] = $slug ;
-
-        $tag->update( $val_data);
-
-        return redirect()->back()->with('message', " $slug updated successfully");
+        $val_data['slug'] = $slug;
+        $tag->update($val_data);
+        return redirect()->back()->with('status',"Tag $slug update succesfully");
     }
 
     /**
@@ -76,8 +64,8 @@ class TagController extends Controller
      */
     public function destroy(Tag $tag)
     {
-        $tag->delete();
 
-        return redirect()->back()->with('message', "Category $tag->name removed");
+        $tag->delete();
+        return redirect()->back()->with('status', "Tag $tag->name Removed Succesfully");
     }
 }

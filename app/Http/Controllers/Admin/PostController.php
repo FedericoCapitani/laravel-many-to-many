@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Post;
-use App\Models\Tag;
-use App\Models\Category;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PostRequest;
-use Illuminate\Http\Request; 
-use Illuminate\Validation\Rule;
+use App\Models\Category;
+use App\Models\Tag;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 
 class PostController extends Controller
@@ -20,8 +20,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::orderByDesc('id')->get();
-        //dd($posts);
+        $posts = Post::all()->sortDesc();
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -34,29 +33,24 @@ class PostController extends Controller
     {
         $categories = Category::all();
         $tags = Tag::all();
-        return view('admin.posts.create', compact ('categories', 'tags'));
+        return view('admin.posts.create',compact('categories','tags'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\PostRequest $request
+     * @param  \App\Http\Requests\PostRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(PostRequest $request)
     {
         //dd($request->all());
-
-        // Validate data
-        $val_data = $request->validated();
-        // Gererate the slug
-        $slug = Post::generateSlug($request->title);
-        $val_data['slug'] = $slug;
-
-        // create the resource
-        Post::create($val_data);
-        // redirect to a get route
-        return redirect()->route('admin.posts.index')->with('message', 'Post Created Successfully');
+        $validate_data = $request->validated();
+        $validate_data['slug'] = Str::slug($request->title);
+        $validate_data['user_id'] = Auth::user()->id;
+        $new_post = Post::create($validate_data);
+        $new_post->tags()->attach($request->tags);
+        return redirect()->route('admin.posts.index')->with('status', 'Post Create SuccessFull');
     }
 
     /**
@@ -80,7 +74,7 @@ class PostController extends Controller
     {
         $categories = Category::all();
         $tags = Tag::all();
-        return view('admin.posts.edit', compact('post', 'categories', 'tags'));
+        return view('admin.posts.edit', compact('post','categories','tags'));
     }
 
     /**
@@ -92,25 +86,11 @@ class PostController extends Controller
      */
     public function update(PostRequest $request, Post $post)
     {
-        //dd($request->all());
-
-        // validate data
-        $val_data = $request->validate([
-            'title' => ['required', Rule::unique('posts')->ignore($post)],
-            'category_id' => 'nullable|exists:categories,id',
-            'cover_image' => 'nullable',
-            'content' => 'nullable'
-        ]);
-        //dd($val_data);
-        // Gererate the slug
-        $slug = Post::generateSlug($request->title);
-        //dd($slug);
-        $val_data['slug'] = $slug;
-        // update the resource
-        $post->update($val_data);
-
-        // redirect to get route
-        return redirect()->route('admin.posts.index')->with('message', "$post->title updated successfully");
+        $validate_data = $request->validated();
+        $validate_data['slug'] = Str::slug($request->title);
+        $post->update($validate_data);
+        $post->tags()->sync($request->tags);
+        return redirect()->route('admin.posts.show', compact('post'))->with('status', "Post $post->title Update SuccessFull");
     }
 
     /**
@@ -121,10 +101,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        //
-
         $post->delete();
-        return redirect()->route('admin.posts.index')->with('message', "$post->title deleted successfully");
-
+        return redirect()->route('admin.posts.index')->with('status', 'Post Delete SuccessFull');
     }
 }
